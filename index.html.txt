@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Primepix Studio | Capturing Moments, Creating Stories</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Montserrat:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom Config & Styles -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'prime-black': '#0a0a0a',
+                        'prime-dark': '#121212',
+                        'prime-gray': '#1e1e1e',
+                        'prime-gold': '#d4af37',
+                        'prime-gold-hover': '#b5952f',
+                    },
+                    fontFamily: {
+                        serif: ['"Cormorant Garamond"', 'serif'],
+                        sans: ['"Montserrat"', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 1s ease-out forwards',
+                        'fade-in': 'fadeIn 1.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(40px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #d4af37;
+        }
+
+        /* Loader */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: #0a0a0a;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s ease;
+        }
+        
+        /* Image Hover Zoom */
+        .img-zoom-container {
+            overflow: hidden;
+        }
+        .img-zoom {
+            transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .group:hover .img-zoom {
+            transform: scale(1.1);
+        }
+
+        /* Reveal Animation Classes */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 1s cubic-bezier(0.5, 0, 0, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Navigation Blur */
+        .nav-blur {
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Custom Cursor (Desktop) */
+        @media (min-width: 1024px) {
+            .cursor-dot,
+            .cursor-outline {
+                position: fixed;
+                top: 0;
+                left: 0;
+                transform: translate(-50%, -50%);
+                border-radius: 50%;
+                z-index: 10000;
+                pointer-events: none;
+            }
+            .cursor-dot {
+                width: 8px;
+                height: 8px;
+                background-color: #d4af37;
+            }
+            .cursor-outline {
+                width: 40px;
+                height: 40px;
+                border: 1px solid rgba(212, 175, 55, 0.5);
+                transition: width 0.2s, height 0.2s, background-color 0.2s;
+            }
+            body:hover .cursor-outline.hovered {
+                width: 80px;
+                height: 80px;
+                background-color: rgba(212, 175, 55, 0.1);
+                border-color: transparent;
+            }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body class="bg-prime-black text-gray-200 font-sans antialiased overflow-x-hidden selection:bg-prime-gold selection:text-black">
+
+    <!-- Custom Cursor Elements -->
+    <div class="cursor-dot hidden lg:block"></div>
+    <div class="cursor-outline hidden lg:block"></div>
+
+    <!-- Preloader -->
+    <div id="loader">
+        <div class="text-center">
+            <h1 class="font-serif text-4xl text-prime-gold italic tracking-widest animate-pulse">Primepix</h1>
+            <p class="text-xs text-gray-500 mt-2 tracking-[0.3em] uppercase">Studio</p>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed w-full z-50 transition-all duration-300 py-6">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <a href="#" class="text-2xl font-serif font-bold text-white tracking-wider z-50 relative group">
+                PRIME<span class="text-prime-gold">PIX</span>
+                <span class="absolute -bottom-2 left-0 w-0 h-0.5 bg-prime-gold transition-all duration-300 group-hover:w-full"></span>
+            </a>
+
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex space-x-8 items-center">
+                <a href="#home" class="nav-link text-sm uppercase tracking-widest hover:text-prime-gold transition-colors">Home</a>
+                <a href="#about" class="nav-link text-sm uppercase tracking-widest hover:text-prime-gold transition-colors">About</a>
+                <a href="#portfolio" class="nav-link text-sm uppercase tracking-widest hover:text-prime-gold transition-colors">Portfolio</a>
+                <a href="#services" class="nav-link text-sm uppercase tracking-widest hover:text-prime-gold transition-colors">Services</a>
+                <a href="#contact" class="px-6 py-2 border border-prime-gold text-prime-gold text-sm uppercase tracking-widest hover:bg-prime-gold hover:text-black transition-all duration-300">Book Now</a>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-btn" class="md:hidden text-white text-2xl z-50 focus:outline-none">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-menu" class="fixed inset-0 bg-prime-black z-40 transform translate-x-full transition-transform duration-500 flex flex-col justify-center items-center space-y-8 md:hidden">
+            <a href="#home" class="mobile-link text-2xl font-serif text-white hover:text-prime-gold">Home</a>
+            <a href="#about" class="mobile-link text-2xl font-serif text-white hover:text-prime-gold">About</a>
+            <a href="#portfolio" class="mobile-link text-2xl font-serif text-white hover:text-prime-gold">Portfolio</a>
+            <a href="#services" class="mobile-link text-2xl font-serif text-white hover:text-prime-gold">Services</a>
+            <a href="#contact" class="mobile-link text-2xl font-serif text-prime-gold">Contact</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="home" class="relative h-screen w-full overflow-hidden flex items-center justify-center">
+        <!-- Background Slider -->
+        <div id="hero-slider" class="absolute inset-0 w-full h-full">
+            <!-- Slides injected by JS -->
+        </div>
+        
+        <!-- Overlay Gradient -->
+        <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/20 to-prime-black z-10"></div>
+
+        <!-- Content -->
+        <div class="relative z-20 text-center px-4 max-w-5xl mx-auto">
+            <p class="text-prime-gold uppercase tracking-[0.4em] text-sm md:text-base mb-4 animate-fade-in-up" style="animation-delay: 0.5s;">Photography Studio</p>
+            <h1 class="font-serif text-5xl md:text-7xl lg:text-8xl text-white mb-6 leading-tight animate-fade-in-up" style="animation-delay: 0.7s;">
+                Capturing Moments,<br>
+                <span class="italic text-gray-300">Creating Stories</span>
+            </h1>
+            <p class="text-gray-300 text-lg md:text-xl font-light mb-10 max-w-2xl mx-auto animate-fade-in-up" style="animation-delay: 0.9s;">
+                We don't just take pictures; we capture the essence of your most precious memories with an artistic touch.
+            </p>
+            <div class="flex flex-col md:flex-row gap-4 justify-center animate-fade-in-up" style="animation-delay: 1.1s;">
+                <a href="#portfolio" class="px-8 py-4 bg-prime-gold text-black font-medium uppercase tracking-widest hover:bg-white transition-colors duration-300">View Portfolio</a>
+                <a href="#contact" class="px-8 py-4 border border-white text-white font-medium uppercase tracking-widest hover:bg-white hover:text-black transition-colors duration-300">Book a Shoot</a>
+            </div>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 animate-bounce">
+            <a href="#about" class="text-white opacity-70 hover:opacity-100 transition-opacity">
+                <i class="fas fa-chevron-down text-2xl"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- About Section -->
+    <section id="about" class="py-24 bg-prime-black relative">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col lg:flex-row items-center gap-16">
+                <!-- Image -->
+                <div class="w-full lg:w-1/2 reveal">
+                    <div class="relative">
+                        <div class="absolute -top-4 -left-4 w-full h-full border border-prime-gold z-0"></div>
+                        <img src="https://images.unsplash.com/photo-1554048612-387768052bf7?q=80&w=1000&auto=format&fit=crop" alt="Photographer" class="relative z-10 w-full h-[600px] object-cover grayscale hover:grayscale-0 transition-all duration-700">
+                    </div>
+                </div>
+                
+                <!-- Content -->
+                <div class="w-full lg:w-1/2 reveal">
+                    <h4 class="text-prime-gold uppercase tracking-widest text-sm mb-2">About Us</h4>
+                    <h2 class="font-serif text-4xl md:text-5xl text-white mb-6">The Art of Visual Storytelling</h2>
+                    <p class="text-gray-400 leading-relaxed mb-6 font-light">
+                        At Primepix Studio, we believe that photography is more than just clicking a shutter—it's about preserving the fleeting moments that define our lives. Founded in 2015, our studio has grown from a passion project into a premier destination for luxury photography.
+                    </p>
+                    <p class="text-gray-400 leading-relaxed mb-8 font-light">
+                        Our lead photographer, Alex Mercer, brings over a decade of experience in fashion and editorial photography to every shoot. Whether it's the raw emotion of a wedding day or the polished perfection of a commercial campaign, we approach every project with the same dedication to artistry.
+                    </p>
+                    
+                    <div class="grid grid-cols-3 gap-8 border-t border-gray-800 pt-8">
+                        <div>
+                            <h3 class="text-3xl font-serif text-white mb-1">500+</h3>
+                            <p class="text-xs text-gray-500 uppercase tracking-wider">Projects Done</p>
+                        </div>
+                        <div>
+                            <h3 class="text-3xl font-serif text-white mb-1">12</h3>
+                            <p class="text-xs text-gray-500 uppercase tracking-wider">Awards Won</p>
+                        </div>
+                        <div>
+                            <h3 class="text-3xl font-serif text-white mb-1">8</h3>
+                            <p class="text-xs text-gray-500 uppercase tracking-wider">Years Exp.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portfolio Section -->
+    <section id="portfolio" class="py-24 bg-prime-dark">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16 reveal">
+                <h4 class="text-prime-gold uppercase tracking-widest text-sm mb-2">Our Work</h4>
+                <h2 class="font-serif text-4xl md:text-5xl text-white">Selected Portfolio</h2>
+            </div>
+
+            <!-- Filters -->
+            <div class="flex flex-wrap justify-center gap-4 mb-12 reveal">
+                <button class="filter-btn active px-6 py-2 text-sm uppercase tracking-widest border border-prime-gold bg-prime-gold text-black transition-all" data-filter="all">All</button>
+                <button class="filter-btn px-6 py-2 text-sm uppercase tracking-widest border border-gray-700 text-gray-400 hover:border-prime-gold hover:text-prime-gold transition-all" data-filter="wedding">Weddings</button>
+                <button class="filter-btn px-6 py-2 text-sm uppercase tracking-widest border border-gray-700 text-gray-400 hover:border-prime-gold hover:text-prime-gold transition-all" data-filter="portrait">Portraits</button>
+                <button class="filter-btn px-6 py-2 text-sm uppercase tracking-widest border border-gray-700 text-gray-400 hover:border-prime-gold hover:text-prime-gold transition-all" data-filter="event">Events</button>
+                <button class="filter-btn px-6 py-2 text-sm uppercase tracking-widest border border-gray-700 text-gray-400 hover:border-prime-gold hover:text-prime-gold transition-all" data-filter="creative">Creative</button>
+            </div>
+
+            <!-- Gallery Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="gallery-grid">
+                <!-- Items injected via JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="py-24 bg-prime-black relative overflow-hidden">
+        <!-- Decorative background element -->
+        <div class="absolute top-0 right-0 w-1/3 h-full bg-prime-gray opacity-20 transform skew-x-12 translate-x-20"></div>
+
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-16 reveal">
+                <div>
+                    <h4 class="text-prime-gold uppercase tracking-widest text-sm mb-2">What We Do</h4>
+                    <h2 class="font-serif text-4xl md:text-5xl text-white">Our Services</h2>
+                </div>
+                <p class="text-gray-400 max-w-md mt-4 md:mt-0 font-light text-right md:text-left">
+                    Tailored photography packages designed to meet your unique needs and vision.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Service 1 -->
+                <div class="group p-8 border border-gray-800 hover:border-prime-gold transition-all duration-500 bg-prime-dark/50 hover:bg-prime-gray reveal">
+                    <div class="text-prime-gold text-4xl mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-ring"></i>
+                    </div>
+                    <h3 class="font-serif text-2xl text-white mb-4">Wedding Shoots</h3>
+                    <p class="text-gray-400 font-light text-sm leading-relaxed mb-6">
+                        Complete coverage of your special day, from preparation to the last dance. Cinematic and emotional storytelling.
+                    </p>
+                    <a href="#contact" class="text-prime-gold text-xs uppercase tracking-widest hover:text-white transition-colors">Inquire <i class="fas fa-arrow-right ml-2"></i></a>
+                </div>
+
+                <!-- Service 2 -->
+                <div class="group p-8 border border-gray-800 hover:border-prime-gold transition-all duration-500 bg-prime-dark/50 hover:bg-prime-gray reveal" style="transition-delay: 100ms;">
+                    <div class="text-prime-gold text-4xl mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                    <h3 class="font-serif text-2xl text-white mb-4">Couple Shoots</h3>
+                    <p class="text-gray-400 font-light text-sm leading-relaxed mb-6">
+                        Intimate sessions for engagements, anniversaries, or just because. Location scouting included.
+                    </p>
+                    <a href="#contact" class="text-prime-gold text-xs uppercase tracking-widest hover:text-white transition-colors">Inquire <i class="fas fa-arrow-right ml-2"></i></a>
+                </div>
+
+                <!-- Service 3 -->
+                <div class="group p-8 border border-gray-800 hover:border-prime-gold transition-all duration-500 bg-prime-dark/50 hover:bg-prime-gray reveal" style="transition-delay: 200ms;">
+                    <div class="text-prime-gold text-4xl mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <h3 class="font-serif text-2xl text-white mb-4">Commercial</h3>
+                    <p class="text-gray-400 font-light text-sm leading-relaxed mb-6">
+                        High-end product, real estate, and brand photography to elevate your business presence.
+                    </p>
+                    <a href="#contact" class="text-prime-gold text-xs uppercase tracking-widest hover:text-white transition-colors">Inquire <i class="fas fa-arrow-right ml-2"></i></a>
+                </div>
+
+                <!-- Service 4 -->
+                <div class="group p-8 border border-gray-800 hover:border-prime-gold transition-all duration-500 bg-prime-dark/50 hover:bg-prime-gray reveal" style="transition-delay: 300ms;">
+                    <div class="text-prime-gold text-4xl mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <h3 class="font-serif text-2xl text-white mb-4">Fine Art Albums</h3>
+                    <p class="text-gray-400 font-light text-sm leading-relaxed mb-6">
+                        Handcrafted, museum-quality photo albums designed to last a lifetime. The perfect heirloom.
+                    </p>
+                    <a href="#contact" class="text-prime-gold text-xs uppercase tracking-widest hover:text-white transition-colors">Inquire <i class="fas fa-arrow-right ml-2"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-24 bg-prime-dark">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col lg:flex-row gap-16">
+                <!-- Contact Info -->
+                <div class="w-full lg:w-1/3 reveal">
+                    <h4 class="text-prime-gold uppercase tracking-widest text-sm mb-2">Get in Touch</h4>
+                    <h2 class="font-serif text-4xl md:text-5xl text-white mb-8">Let's Create Together</h2>
+                    <p class="text-gray-400 font-light mb-10">
+                        Ready to book your session or have questions about our packages? Fill out the form or contact us directly.
+                    </p>
+
+                    <div class="space-y-6">
+                        <div class="flex items-start space-x-4">
+                            <div class="text-prime-gold mt-1"><i class="fas fa-map-marker-alt"></i></div>
+                            <div>
+                                <h5 class="text-white font-medium">Studio Location</h5>
+                                <p class="text-gray-400 text-sm">123 Aesthetic Avenue, Design District<br>New York, NY 10012</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4">
+                            <div class="text-prime-gold mt-1"><i class="fas fa-phone"></i></div>
+                            <div>
+                                <h5 class="text-white font-medium">Phone</h5>
+                                <p class="text-gray-400 text-sm">+1 (555) 123-4567</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4">
+                            <div class="text-prime-gold mt-1"><i class="fas fa-envelope"></i></div>
+                            <div>
+                                <h5 class="text-white font-medium">Email</h5>
+                                <p class="text-gray-400 text-sm">hello@primepix.studio</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-10 flex space-x-4">
+                        <a href="#" class="w-10 h-10 rounded-full border border-gray-600 flex items-center justify-center text-gray-400 hover:bg-prime-gold hover:text-black hover:border-prime-gold transition-all"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="w-10 h-10 rounded-full border border-gray-600 flex items-center justify-center text-gray-400 hover:bg-prime-gold hover:text-black hover:border-prime-gold transition-all"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="w-10 h-10 rounded-full border border-gray-600 flex items-center justify-center text-gray-400 hover:bg-prime-gold hover:text-black hover:border-prime-gold transition-all"><i class="fab fa-pinterest-p"></i></a>
+                    </div>
+                </div>
+
+                <!-- Form -->
+                <div class="w-full lg:w-2/3 reveal">
+                    <form id="contact-form" class="bg-prime-black p-8 md:p-12 border border-gray-800 shadow-2xl">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div class="relative">
+                                <input type="text" id="name" class="peer w-full bg-transparent border-b border-gray-700 py-3 text-white focus:outline-none focus:border-prime-gold transition-colors placeholder-transparent" placeholder="Name" required>
+                                <label for="name" class="absolute left-0 -top-3.5 text-gray-500 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-3 peer-focus:-top-3.5 peer-focus:text-prime-gold peer-focus:text-sm">Name</label>
+                            </div>
+                            <div class="relative">
+                                <input type="email" id="email" class="peer w-full bg-transparent border-b border-gray-700 py-3 text-white focus:outline-none focus:border-prime-gold transition-colors placeholder-transparent" placeholder="Email" required>
+                                <label for="email" class="absolute left-0 -top-3.5 text-gray-500 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-3 peer-focus:-top-3.5 peer-focus:text-prime-gold peer-focus:text-sm">Email</label>
+                            </div>
+                        </div>
+                        <div class="relative mb-8">
+                            <select id="service" class="w-full bg-transparent border-b border-gray-700 py-3 text-gray-400 focus:outline-none focus:border-prime-gold transition-colors">
+                                <option value="" disabled selected class="bg-prime-black">Interested Service</option>
+                                <option value="wedding" class="bg-prime-black">Wedding Photography</option>
+                                <option value="portrait" class="bg-prime-black">Portrait Session</option>
+                                <option value="commercial" class="bg-prime-black">Commercial Project</option>
+                                <option value="event" class="bg-prime-black">Event Coverage</option>
+                            </select>
+                        </div>
+                        <div class="relative mb-8">
+                            <textarea id="message" rows="4" class="peer w-full bg-transparent border-b border-gray-700 py-3 text-white focus:outline-none focus:border-prime-gold transition-colors placeholder-transparent" placeholder="Message" required></textarea>
+                            <label for="message" class="absolute left-0 -top-3.5 text-gray-500 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-3 peer-focus:-top-3.5 peer-focus:text-prime-gold peer-focus:text-sm">Tell us about your vision...</label>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-prime-gold text-black font-bold uppercase tracking-widest py-4 hover:bg-white transition-colors duration-300">
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black py-12 border-t border-gray-900">
+        <div class="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
+            <div class="mb-6 md:mb-0">
+                <span class="text-2xl font-serif font-bold text-white tracking-wider">PRIME<span class="text-prime-gold">PIX</span></span>
+                <p class="text-gray-600 text-xs mt-2 uppercase tracking-widest">Capturing Moments Since 2015</p>
+            </div>
+            <div class="text-gray-600 text-sm">
+                &copy; 2023 Primepix Studio. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Lightbox Modal -->
+    <div id="lightbox" class="fixed inset-0 z-[100] bg-black/95 hidden flex justify-center items-center opacity-0 transition-opacity duration-300">
+        <button id="lightbox-close" class="absolute top-6 right-6 text-white text-4xl hover:text-prime-gold transition-colors focus:outline-none">&times;</button>
+        <button id="lightbox-prev" class="absolute left-4 md:left-8 text-white text-3xl md:text-5xl hover:text-prime-gold transition-colors focus:outline-none"><i class="fas fa-chevron-left"></i></button>
+        <button id="lightbox-next" class="absolute right-4 md:right-8 text-white text-3xl md:text-5xl hover:text-prime-gold transition-colors focus:outline-none"><i class="fas fa-chevron-right"></i></button>
+        
+        <div class="max-w-5xl max-h-[85vh] p-2">
+            <img id="lightbox-img" src="" alt="Full screen" class="max-w-full max-h-[85vh] object-contain shadow-2xl border-2 border-gray-800">
+            <div id="lightbox-caption" class="text-center text-gray-400 mt-4 font-serif text-xl italic"></div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Data for Gallery
+        const portfolioItems = [
+            { id: 1, category: 'wedding', src: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80', fullSrc: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1600&q=90', title: 'Eternal Vows' },
+            { id: 2, category: 'portrait', src: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=800&q=80', fullSrc: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=1600&q=90', title: 'Urban Gaze' },
+            { id: 3, category: 'event', src: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=800&q=80', fullSrc: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1600&q=90', title: 'Gala Night' },
+            { id: 4, category: 'creative', src: 'https://images.unsplash.com/photo-1493863641943-9b68992a8d07?auto=format&fit=crop&w=800&q=80', fullSrc: 'https://images.unsplash.com/photo-1493863641943-9b68992a8d07?auto=format&fit=crop&w=1600&q=90', title: 'Shadow Play' },
+            { id: 5, category: 'wedding', src: 'https://images.unsplash.com/photo-1511285560982-1351cdeb9821?auto=format&fit=crop&w=800&q=80', fullSrc: 'https://images.unsplash.com/photo-1511285560982-1351cdeb9821?auto=format&fit=crop&w=1600&q=90', title: 'Beach Romance' },
+            { id: 6, category: 'portrait', src: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80', fullSrc: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1600&q=90', title: 'Raw Emotion' },
+            { id: 7, category: 'creative', src: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=800&q=80', fullSrc: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=1600&q=90', title: 'Neon Dreams' },
+            { id: 8, category: 'event', src: 'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?auto=format&fit=crop&w=800&q=80', fullSrc: 'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?auto=format&fit=crop&w=1600&q=90', title: 'Concert Live' },
+            { id: 9, category: 'wedding', src: 'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=800&q=80', fullSrc: 'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=1600&q=90', title: 'First Dance' },
+        ];
+
+        // Data for Hero Slider
+        const heroImages = [
+            'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=1920&q=80', // Landscape/Travel
+            'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?auto=format&fit=crop&w=1920&q=80', // Wedding/Couple
+            'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?auto=format&fit=crop&w=1920&q=80'  // Portrait
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- 1. Preloader ---
+            const loader = document.getElementById('loader');
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                }, 800);
+            }, 1500);
+
+            // --- 2. Hero Slider Logic ---
+            const sliderContainer = document.getElementById('hero-slider');
+            let currentSlide = 0;
+
+            // Create slide elements
+            heroImages.forEach((src, index) => {
+                const div = document.createElement('div');
+                div.className = `absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out ${index === 0 ? 'opacity-100' : 'opacity-0'}`;
+                div.style.backgroundImage = `url('${src}')`;
+                // Add subtle zoom animation
+                div.style.animation = 'kenburns 20s infinite alternate';
+                sliderContainer.appendChild(div);
+            });
+
+            // Add keyframes for ken burns
+            const styleSheet = document.createElement("style");
+            styleSheet.innerText = `
+                @keyframes kenburns {
+                    0% { transform: scale(1); }
+                    100% { transform: scale(1.1); }
+                }
+            `;
+            document.head.appendChild(styleSheet);
+
+            setInterval(() => {
+                const slides = sliderContainer.children;
+                slides[currentSlide].classList.remove('opacity-100');
+                slides[currentSlide].classList.add('opacity-0');
+                
+                currentSlide = (currentSlide + 1) % slides.length;
+                
+                slides[currentSlide].classList.remove('opacity-0');
+                slides[currentSlide].classList.add('opacity-100');
+            }, 5000);
+
+            // --- 3. Navigation & Scroll Effects ---
+            const navbar = document.getElementById('navbar');
+            const navLinks = document.querySelectorAll('.nav-link, .mobile-link');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            let isMenuOpen = false;
+
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('nav-blur', 'py-3');
+                    navbar.classList.remove('py-6');
+                } else {
+                    navbar.classList.remove('nav-blur', 'py-3');
+                    navbar.classList.add('py-6');
+                }
+            });
+
+            // Mobile Menu Toggle
+            mobileMenuBtn.addEventListener('click', () => {
+                isMenuOpen = !isMenuOpen;
+                if (isMenuOpen) {
+                    mobileMenu.classList.remove('translate-x-full');
+                    mobileMenuBtn.innerHTML = '<i class="fas fa-times"></i>';
+                } else {
+                    mobileMenu.classList.add('translate-x-full');
+                    mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+                }
+            });
+
+            // Close mobile menu on link click
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (isMenuOpen) {
+                        mobileMenu.classList.add('translate-x-full');
+                        mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+                        isMenuOpen = false;
+                    }
+                });
+            });
+
+            // --- 4. Custom Cursor Logic ---
+            const cursorDot = document.querySelector('.cursor-dot');
+            const cursorOutline = document.querySelector('.cursor-outline');
+            
+            window.addEventListener('mousemove', (e) => {
+                const posX = e.clientX;
+                const posY = e.clientY;
+
+                cursorDot.style.left = `${posX}px`;
+                cursorDot.style.top = `${posY}px`;
+
+                // Add slight delay to outline for fluid feel
+                cursorOutline.animate({
+                    left: `${posX}px`,
+                    top: `${posY}px`
+                }, { duration: 500, fill: "forwards" });
+            });
+
+            // Hover effects for cursor
+            const interactables = document.querySelectorAll('a, button, .gallery-item');
+            interactables.forEach(el => {
+                el.addEventListener('mouseenter', () => cursorOutline.classList.add('hovered'));
+                el.addEventListener('mouseleave', () => cursorOutline.classList.remove('hovered'));
+            });
+
+            // --- 5. Portfolio Rendering & Filtering ---
+            const galleryGrid = document.getElementById('gallery-grid');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+
+            function renderGallery(filter = 'all') {
+                galleryGrid.innerHTML = '';
+                const filteredItems = filter === 'all' 
+                    ? portfolioItems 
+                    : portfolioItems.filter(item => item.category === filter);
+
+                filteredItems.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'gallery-item group relative overflow-hidden cursor-pointer h-80 reveal';
+                    div.style.transitionDelay = `${index * 50}ms`; // Staggered animation
+                    div.innerHTML = `
+                        <img src="${item.src}" alt="${item.title}" class="w-full h-full object-cover img-zoom transition-transform duration-700">
+                        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-center items-center">
+                            <h3 class="text-white font-serif text-2xl italic translate-y-4 group-hover:translate-y-0 transition-transform duration-500">${item.title}</h3>
+                            <p class="text-prime-gold text-xs uppercase tracking-widest mt-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-75">${item.category}</p>
+                        </div>
+                    `;
+                    div.addEventListener('click', () => openLightbox(item));
+                    galleryGrid.appendChild(div);
+                });
+                
+                // Trigger reveal animation for new items
+                setTimeout(checkScroll, 100);
+            }
+
+            // Filter Click Events
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Remove active class from all
+                    filterBtns.forEach(b => {
+                        b.classList.remove('bg-prime-gold', 'text-black', 'border-prime-gold');
+                        b.classList.add('text-gray-400', 'border-gray-700');
+                    });
+                    // Add active class to clicked
+                    btn.classList.remove('text-gray-400', 'border-gray-700');
+                    btn.classList.add('bg-prime-gold', 'text-black', 'border-prime-gold');
+                    
+                    renderGallery(btn.dataset.filter);
+                });
+            });
+
+            // Initial Render
+            renderGallery();
+
+            // --- 6. Lightbox Logic ---
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            const lightboxCaption = document.getElementById('lightbox-caption');
+            const lightboxClose = document.getElementById('lightbox-close');
+            const lightboxPrev = document.getElementById('lightbox-prev');
+            const lightboxNext = document.getElementById('lightbox-next');
+            let currentLightboxIndex = 0;
+            let currentFilteredItems = portfolioItems; // Keep track of current filter context
+
+            function openLightbox(item) {
+                // Find index in currently filtered items if possible, or full list
+                // For simplicity, we navigate through the full list or just close on edge
+                currentLightboxIndex = portfolioItems.findIndex(p => p.id === item.id);
+                
+                updateLightboxContent();
+                
+                lightbox.classList.remove('hidden');
+                // Small delay to allow display:block to apply before opacity transition
+                setTimeout(() => {
+                    lightbox.classList.remove('opacity-0');
+                }, 10);
+                document.body.style.overflow = 'hidden'; // Prevent scrolling
+            }
+
+            function closeLightbox() {
+                lightbox.classList.add('opacity-0');
+                setTimeout(() => {
+                    lightbox.classList.add('hidden');
+                }, 300);
+                document.body.style.overflow = 'auto';
+            }
+
+            function updateLightboxContent() {
+                const item = portfolioItems[currentLightboxIndex];
+                lightboxImg.src = item.fullSrc;
+                lightboxCaption.textContent = `${item.title} — ${item.category}`;
+            }
+
+            function nextImage() {
+                currentLightboxIndex = (currentLightboxIndex + 1) % portfolioItems.length;
+                updateLightboxContent();
+            }
+
+            function prevImage() {
+                currentLightboxIndex = (currentLightboxIndex - 1 + portfolioItems.length) % portfolioItems.length;
+                updateLightboxContent();
+            }
+
+            lightboxClose.addEventListener('click', closeLightbox);
+            lightboxNext.addEventListener('click', (e) => { e.stopPropagation(); nextImage(); });
+            lightboxPrev.addEventListener('click', (e) => { e.stopPropagation(); prevImage(); });
+            
+            // Close on background click
+            lightbox.addEventListener('click', (e) => {
+                if (e.target === lightbox) closeLightbox();
+            });
+
+            // Keyboard nav
+            document.addEventListener('keydown', (e) => {
+                if (lightbox.classList.contains('hidden')) return;
+                if (e.key === 'Escape') closeLightbox();
+                if (e.key === 'ArrowRight') nextImage();
+                if (e.key === 'ArrowLeft') prevImage();
+            });
+
+            // --- 7. Scroll Reveal Animation ---
+            const revealElements = document.querySelectorAll('.reveal');
+
+            function checkScroll() {
+                const triggerBottom = window.innerHeight * 0.85;
+                
+                revealElements.forEach(box => {
+                    const boxTop = box.getBoundingClientRect().top;
+                    if (boxTop < triggerBottom) {
+                        box.classList.add('active');
+                    }
+                });
+            }
+
+            window.addEventListener('scroll', checkScroll);
+            checkScroll(); // Check on load
+
+            // --- 8. Contact Form Handling ---
+            const form = document.getElementById('contact-form');
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const btn = form.querySelector('button');
+                const originalText = btn.innerText;
+                
+                btn.innerText = 'Sending...';
+                btn.classList.add('opacity-75');
+                
+                // Simulate API call
+                setTimeout(() => {
+                    btn.innerText = 'Message Sent!';
+                    btn.classList.remove('bg-prime-gold', 'text-black');
+                    btn.classList.add('bg-green-600', 'text-white');
+                    form.reset();
+                    
+                    setTimeout(() => {
+                        btn.innerText = originalText;
+                        btn.classList.add('bg-prime-gold', 'text-black');
+                        btn.classList.remove('bg-green-600', 'text-white', 'opacity-75');
+                    }, 3000);
+                }, 1500);
+            });
+        });
+    </script>
+</body>
+</html>
